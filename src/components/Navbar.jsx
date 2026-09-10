@@ -9,10 +9,10 @@ export default function Navbar({ activePage, setActivePage }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navItems = [
-    { id: 'home', label: 'Holiday Portfolios', icon: Compass },
-    { id: 'bus', label: 'Abhi Bus', icon: Bus },
-    { id: 'track', label: 'PNR Terminal', icon: FileText },
-    { id: 'grievance', label: 'Guest Support', icon: Headphones },
+    { id: 'home', label: 'Holiday Portfolios', shortLabel: 'Holidays', icon: Compass },
+    { id: 'bus', label: 'Abhi Bus', shortLabel: 'Bus', icon: Bus },
+    { id: 'track', label: 'PNR Terminal', shortLabel: 'PNR', icon: FileText },
+    { id: 'grievance', label: 'Guest Support', shortLabel: 'Support', icon: Headphones },
   ];
 
   const handleNavClick = (id) => {
@@ -34,23 +34,23 @@ export default function Navbar({ activePage, setActivePage }) {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all duration-200 font-sans">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 lg:gap-4">
           
           {/* Executive Brand Crest */}
           <div 
             onClick={() => handleNavClick('home')}
-            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none group shrink-0"
+            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer select-none group shrink-0"
           >
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#0B2545] via-[#133A6B] to-[#1D4ED8] p-0.5 shadow-md group-hover:shadow-lg transition-all duration-300">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#0B2545] via-[#133A6B] to-[#1D4ED8] p-0.5 shadow-md group-hover:shadow-lg transition-all duration-300">
               <div className="w-full h-full rounded-[10px] bg-gradient-to-br from-[#0B2545] to-[#07192F] flex items-center justify-center relative overflow-hidden border border-white/15">
-                <div className="absolute w-8 h-8 rounded-full bg-blue-400/20 blur-sm pointer-events-none" />
+                <div className="absolute w-7 h-7 rounded-full bg-blue-400/20 blur-sm pointer-events-none" />
 
                 {/* Aviation Crest SVG */}
                 <svg
                   viewBox="0 0 48 48"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6 sm:w-7 sm:h-7 transform group-hover:scale-110 transition-transform duration-300"
+                  className="w-5 h-5 sm:w-6 sm:h-6 transform group-hover:scale-110 transition-transform duration-300"
                 >
                   <defs>
                     <linearGradient id="planeGrad" x1="16" y1="36" x2="36" y2="12" gradientUnits="userSpaceOnUse">
@@ -78,21 +78,21 @@ export default function Navbar({ activePage, setActivePage }) {
 
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-[#0B2545] leading-none font-mono">
+                <span className="text-base sm:text-lg lg:text-xl font-black tracking-tight text-[#0B2545] leading-none font-mono">
                   ABHI
                 </span>
-                <span className="text-lg sm:text-xl font-black tracking-tight text-[#FF9900] leading-none font-mono">
+                <span className="text-base sm:text-lg lg:text-xl font-black tracking-tight text-[#FF9900] leading-none font-mono">
                   WORLD
                 </span>
               </div>
-              <span className="text-[8px] sm:text-[8.5px] uppercase font-extrabold text-slate-400 tracking-[0.2em] mt-0.5">
+              <span className="hidden sm:block text-[7.5px] lg:text-[8.5px] uppercase font-extrabold text-slate-400 tracking-[0.16em] mt-0.5">
                 Escorted Luxury Tours
               </span>
             </div>
           </div>
 
-          {/* Desktop Navigation Controller */}
-          <nav className="hidden md:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          {/* Desktop & Tablet Navigation Controller */}
+          <nav className="hidden md:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-0.5 lg:gap-1">
             {navItems.map((item) => {
               const isActive = activePage === item.id;
               const Icon = item.icon;
@@ -101,28 +101,30 @@ export default function Navbar({ activePage, setActivePage }) {
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 lg:px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer shrink-0 ${
                     isActive
                       ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200'
                       : 'text-slate-600 hover:text-slate-950'
                   }`}
                 >
                   <Icon size={14} className={isActive ? 'text-[#1D4ED8]' : 'text-slate-400'} />
-                  <span>{item.label}</span>
+                  {/* Tablet displays concise label, desktop displays full label */}
+                  <span className="hidden xl:inline">{item.label}</span>
+                  <span className="inline xl:hidden">{item.shortLabel}</span>
                 </button>
               );
             })}
           </nav>
 
           {/* Right Actions: Auth & Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {isLoggedIn ? (
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1.5 px-2 lg:px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800">
                   <div className="w-5 h-5 rounded-full bg-[#0B2545] text-white flex items-center justify-center text-[10px] font-black">
                     {authForm.name ? authForm.name.charAt(0).toUpperCase() : 'G'}
                   </div>
-                  <span className="truncate max-w-[85px] sm:max-w-[110px]">{authForm.name || 'Guest'}</span>
+                  <span className="truncate max-w-[70px] sm:max-w-[95px] lg:max-w-[120px]">{authForm.name || 'Guest'}</span>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -138,14 +140,14 @@ export default function Navbar({ activePage, setActivePage }) {
                   setAuthMode('login');
                   setIsAuthModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-[#0B2545] hover:bg-[#07192F] text-white text-xs font-black uppercase tracking-wider transition shadow-sm cursor-pointer active:scale-95"
+                className="flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-xl bg-[#0B2545] hover:bg-[#07192F] text-white text-xs font-black uppercase tracking-wider transition shadow-sm cursor-pointer active:scale-95"
               >
                 <User size={13} className="text-[#FF9900]" />
                 <span>Login</span>
               </button>
             )}
 
-            {/* Mobile Hamburger Button */}
+            {/* Mobile/Small Tablet Hamburger Button */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -158,7 +160,7 @@ export default function Navbar({ activePage, setActivePage }) {
 
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile & Small Tablet Dropdown Drawer */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 shadow-lg animate-fade-in space-y-1">
             {navItems.map((item) => {
