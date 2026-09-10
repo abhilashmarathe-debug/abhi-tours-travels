@@ -17,7 +17,7 @@ import Loader from './components/Loader';
 import { PACKAGES } from './data/mockData';
 import { 
   Search, ArrowRight, Globe, ArrowRightLeft, 
-  X, MapPin, PhoneCall, Code2
+  X, MapPin, PhoneCall, Bus
 } from 'lucide-react';
 
 export default function App() {
@@ -126,7 +126,7 @@ export default function App() {
     <>
       {loading && <Loader onComplete={() => setLoading(false)} />}
 
-      <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#1D4ED8] selection:text-white">
+      <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#1D4ED8] selection:text-white relative">
         <Navbar activePage={activePage} setActivePage={(page) => navigateTo(page, null)} />
 
         {activePage === 'home' && (
@@ -377,6 +377,27 @@ export default function App() {
               handleSelectPackage(pkg);
             }}
           />
+        )}
+
+        {/* Mobile-Only Circular Floating Action Bubble (Bottom-Right) */}
+        {activePage !== 'bus' && (
+          <div className="md:hidden fixed bottom-6 right-5 z-40">
+            <button
+              type="button"
+              onClick={() => navigateTo('bus')}
+              className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#0B2545] via-[#133A6B] to-[#1D4ED8] border-2 border-white/90 text-white shadow-[0_10px_25px_rgba(11,37,69,0.45)] flex flex-col items-center justify-center cursor-pointer transition-transform duration-200 active:scale-95 select-none"
+              aria-label="Book Bus Tickets"
+            >
+              <Bus size={22} className="text-[#FF9900] stroke-[2.5]" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-white leading-none mt-1">
+                Bus
+              </span>
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#FF9900] border-2 border-white" />
+              </span>
+            </button>
+          </div>
         )}
 
         {/* Persistent Cookie Consent Popup */}
