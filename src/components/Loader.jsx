@@ -4,20 +4,20 @@ export default function Loader({ onComplete }) {
   const [phase, setPhase] = useState('taxi'); // 'taxi' | 'takeoff' | 'fadeout'
 
   useEffect(() => {
-    // 1. Initial ground roll & parallax shift
+    // 1. Initial relaxed ground roll & tarmac preview
     const takeoffTimer = setTimeout(() => {
       setPhase('takeoff');
-    }, 450);
+    }, 900);
 
-    // 2. Flight ascends across skyline while coach cruises safely along the road below
+    // 2. Flight ascends gently while coach glides smoothly across the road below
     const fadeTimer = setTimeout(() => {
       setPhase('fadeout');
-    }, 2500);
+    }, 4200);
 
     // 3. Unmount loader and reveal application
     const finishTimer = setTimeout(() => {
       onComplete();
-    }, 2900);
+    }, 4800);
 
     return () => {
       clearTimeout(takeoffTimer);
@@ -28,7 +28,7 @@ export default function Loader({ onComplete }) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white text-slate-900 transition-opacity duration-600 overflow-hidden font-sans select-none ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white text-slate-900 transition-opacity duration-700 overflow-hidden font-sans select-none ${
         phase === 'fadeout' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
@@ -41,12 +41,12 @@ export default function Loader({ onComplete }) {
       {/* Soft Drifting Vapor Clouds */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
         <div
-          className={`absolute top-14 left-10 w-96 h-12 bg-sky-200/60 blur-2xl rounded-full transition-transform duration-[3000ms] ${
+          className={`absolute top-14 left-10 w-96 h-12 bg-sky-200/60 blur-2xl rounded-full transition-transform duration-[4500ms] ${
             phase === 'takeoff' ? '-translate-x-36' : 'translate-x-0'
           }`}
         />
         <div
-          className={`absolute top-36 right-12 w-80 h-14 bg-amber-200/40 blur-2xl rounded-full transition-transform duration-[3000ms] ${
+          className={`absolute top-36 right-12 w-80 h-14 bg-amber-200/40 blur-2xl rounded-full transition-transform duration-[4500ms] ${
             phase === 'takeoff' ? 'translate-x-32' : 'translate-x-0'
           }`}
         />
@@ -54,12 +54,12 @@ export default function Loader({ onComplete }) {
 
       {/* Main Multi-Layered Stage */}
       <div className="relative w-full max-w-4xl h-[420px] flex items-center justify-center overflow-visible px-4">
-        
+
         {/* ========================================================================= */}
         {/* BACKDROP: LUXURY RESORTS & METROPOLITAN SKYSCRAPERS (PARALLAX VECTOR)    */}
         {/* ========================================================================= */}
         <div
-          className={`absolute bottom-11 inset-x-0 h-56 flex items-end justify-center pointer-events-none transition-transform duration-[2200ms] ease-out ${
+          className={`absolute bottom-11 inset-x-0 h-56 flex items-end justify-center pointer-events-none transition-transform duration-[3800ms] ease-out ${
             phase === 'takeoff' ? '-translate-x-8 scale-[1.02]' : 'translate-x-0 scale-100'
           }`}
         >
@@ -70,14 +70,12 @@ export default function Loader({ onComplete }) {
             className="w-full h-full object-bottom opacity-75"
           >
             <defs>
-              {/* Skyline Glass Shading */}
               <linearGradient id="hotelGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.45" />
                 <stop offset="60%" stopColor="#DBEAFE" stopOpacity="0.3" />
                 <stop offset="100%" stopColor="#EFF6FF" stopOpacity="0.05" />
               </linearGradient>
 
-              {/* Distant Spire Shading */}
               <linearGradient id="skyScraperGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.35" />
                 <stop offset="100%" stopColor="#BFDBFE" stopOpacity="0.1" />
@@ -86,25 +84,19 @@ export default function Loader({ onComplete }) {
 
             {/* --- Distant Layer: Mega-Towers & Spires --- */}
             <g fill="url(#skyScraperGrad)" stroke="#93C5FD" strokeWidth="1" strokeOpacity="0.4">
-              {/* Central Iconic Spire (Burj / Needle Motif) */}
               <path d="M495 20 L500 0 L505 20 L514 90 L514 240 L486 240 L486 90 Z" />
-              {/* Slender Finance Towers */}
               <rect x="230" y="55" width="46" height="185" rx="3" />
               <path d="M230 55 L253 28 L276 55 Z" />
               <rect x="740" y="45" width="54" height="195" rx="3" />
               <path d="M740 45 L767 18 L794 45 Z" />
-              {/* Angled Glass Skyscraper */}
               <path d="M340 70 L385 45 L385 240 L340 240 Z" />
               <path d="M620 50 L675 75 L675 240 L620 240 Z" />
             </g>
 
             {/* --- Forefront Layer: Grand Heritage Palaces & Luxury Hotels --- */}
             <g fill="url(#hotelGrad)" stroke="#60A5FA" strokeWidth="1.2" strokeOpacity="0.55">
-              
-              {/* Left Wing: Coastal Resort Hotel with Balconies */}
               <rect x="80" y="95" width="90" height="145" rx="4" />
               <path d="M80 95 L125 70 L170 95 Z" />
-              {/* Resort Balcony Lines */}
               <g stroke="#93C5FD" strokeWidth="1" strokeOpacity="0.6">
                 <line x1="92" y1="115" x2="158" y2="115" />
                 <line x1="92" y1="135" x2="158" y2="135" />
@@ -113,15 +105,12 @@ export default function Loader({ onComplete }) {
                 <line x1="92" y1="195" x2="158" y2="195" />
               </g>
 
-              {/* Grand Tiered Plaza Hotel (Left-Center) */}
               <path d="M185 130 L215 130 L215 105 L230 105 L230 85 L260 85 L260 105 L275 105 L275 130 L305 130 L305 240 L185 240 Z" />
 
-              {/* Metropolitan Stepped Hotel Towers (Center Right) */}
               <rect x="400" y="85" width="70" height="155" rx="3" />
               <circle cx="435" cy="115" r="14" stroke="#60A5FA" strokeWidth="1" fill="none" opacity="0.7" />
-              
+
               <rect x="530" y="75" width="75" height="165" rx="3" />
-              {/* Hotel Suite Grid Matrix */}
               <g fill="#93C5FD" opacity="0.45">
                 <rect x="542" y="90" width="10" height="12" rx="1" />
                 <rect x="562" y="90" width="10" height="12" rx="1" />
@@ -134,17 +123,15 @@ export default function Loader({ onComplete }) {
                 <rect x="582" y="134" width="10" height="12" rx="1" />
               </g>
 
-              {/* Luxury Domed Heritage Hotel (Right Flank) */}
               <path d="M815 110 Q850 65 885 110 L885 240 L815 240 Z" />
               <line x1="850" y1="65" x2="850" y2="48" stroke="#60A5FA" strokeWidth="1.5" />
               <circle cx="850" cy="46" r="2.5" fill="#FF9900" />
-              
-              {/* Far Right Skyline Block */}
+
               <rect x="900" y="100" width="60" height="140" rx="3" />
               <path d="M900 100 L930 80 L960 100 Z" />
             </g>
 
-            {/* Subtle Tropical Palms at Skyline Base */}
+            {/* Subtle Palms */}
             <g stroke="#60A5FA" strokeWidth="1" opacity="0.5" fill="none">
               <path d="M55 240 Q65 210 60 195 Q50 190 40 200 M60 195 Q70 185 80 192 M60 195 Q65 180 60 175" />
               <path d="M710 240 Q718 215 715 200 Q705 195 695 205 M715 200 Q725 190 735 197 M715 200 Q720 185 715 180" />
@@ -158,15 +145,15 @@ export default function Loader({ onComplete }) {
         <div
           className={`absolute left-4 z-30 transition-all ease-out ${
             phase === 'taxi'
-              ? 'translate-x-6 bottom-20 scale-95 duration-500'
-              : 'translate-x-[115vw] -translate-y-72 -rotate-14 duration-[1950ms] scale-125'
+              ? 'translate-x-6 bottom-20 scale-95 duration-900'
+              : 'translate-x-[115vw] -translate-y-72 -rotate-14 duration-[3400ms] scale-125'
           }`}
         >
           <div className="relative flex items-center">
-            
+
             {/* Jet Engine Thermal Wake & Vapor Lines */}
             <div
-              className={`absolute right-[85%] top-[56%] -translate-y-1/2 flex flex-col gap-2 transition-opacity duration-300 pointer-events-none ${
+              className={`absolute right-[85%] top-[56%] -translate-y-1/2 flex flex-col gap-2 transition-opacity duration-500 pointer-events-none ${
                 phase === 'takeoff' ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -249,7 +236,7 @@ export default function Loader({ onComplete }) {
 
             {/* Dissipating Tarmac Shadow */}
             <div
-              className={`absolute top-26 left-6 h-3 bg-slate-300/70 rounded-full blur-md transition-all duration-700 pointer-events-none ${
+              className={`absolute top-26 left-6 h-3 bg-slate-300/70 rounded-full blur-md transition-all duration-1000 pointer-events-none ${
                 phase === 'takeoff' ? 'w-8 opacity-0 translate-x-24 scale-50' : 'w-28 opacity-100'
               }`}
             />
@@ -262,15 +249,15 @@ export default function Loader({ onComplete }) {
         <div
           className={`absolute right-4 bottom-10 z-20 transition-all ease-in-out pointer-events-none ${
             phase === 'taxi'
-              ? 'translate-x-2 duration-500 scale-95'
-              : '-translate-x-[115vw] duration-[1950ms] scale-95'
+              ? 'translate-x-2 duration-900 scale-95'
+              : '-translate-x-[115vw] duration-[3400ms] scale-95'
           }`}
         >
           <div className="relative flex items-center">
-            
+
             {/* Front Headlight Beams Piercing Road Ahead */}
             <div
-              className={`absolute right-[88%] top-[55%] -translate-y-1/2 w-44 h-11 bg-gradient-to-l from-amber-300/60 via-amber-200/20 to-transparent blur-xs rounded-full pointer-events-none transition-opacity duration-300 ${
+              className={`absolute right-[88%] top-[55%] -translate-y-1/2 w-44 h-11 bg-gradient-to-l from-amber-300/60 via-amber-200/20 to-transparent blur-xs rounded-full pointer-events-none transition-opacity duration-500 ${
                 phase === 'takeoff' ? 'opacity-100' : 'opacity-60'
               }`}
               style={{ clipPath: 'polygon(100% 35%, 0 0, 0 100%, 100% 65%)' }}
@@ -325,7 +312,6 @@ export default function Loader({ onComplete }) {
                 </g>
 
                 <path d="M6 38 C32 38, 70 37, 158 37" stroke="url(#busGoldStripe)" strokeWidth="2.8" />
-
                 <rect x="6" y="41" width="3.5" height="4" rx="1" fill="#FEF08A" />
 
                 <ellipse cx="32" cy="50" rx="9" ry="9" fill="#0F172A" />
@@ -338,9 +324,9 @@ export default function Loader({ onComplete }) {
               </svg>
             </div>
 
-            {/* Rear Red Brake Light Trails Trailing to the Right */}
+            {/* Rear Red Brake Light Trails */}
             <div
-              className={`absolute left-[94%] top-1/2 -translate-y-1/2 flex flex-col gap-1.5 transition-opacity duration-300 pointer-events-none ${
+              className={`absolute left-[94%] top-1/2 -translate-y-1/2 flex flex-col gap-1.5 transition-opacity duration-500 pointer-events-none ${
                 phase === 'takeoff' ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -391,10 +377,10 @@ export default function Loader({ onComplete }) {
           {phase === 'fadeout' && 'Welcome Aboard • Departures Active'}
         </p>
 
-        {/* Clean Daylight Progress Track */}
+        {/* Relaxed Progress Track */}
         <div className="w-60 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden mt-3 border border-slate-200">
           <div
-            className={`h-full bg-gradient-to-r from-[#1D4ED8] via-[#FF9900] to-emerald-600 rounded-full transition-all duration-[2400ms] ease-out ${
+            className={`h-full bg-gradient-to-r from-[#1D4ED8] via-[#FF9900] to-emerald-600 rounded-full transition-all duration-[4200ms] ease-out ${
               phase === 'taxi' ? 'w-1/4' : 'w-full'
             }`}
           />
