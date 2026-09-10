@@ -4,6 +4,10 @@ import PackageDetailPage from './pages/PackageDetailPage';
 import TrackBookingPage from './pages/TrackBookingPage';
 import GrievancePage from './pages/GrievancePage';
 import BusBookingPage from './pages/BusBookingPage';
+import CookiePolicyPage from './pages/CookiePolicyPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import CookiePopup from './components/CookiePopup';
 import CompareModal from './components/CompareModal';
 import PromoOffersAndForex from './components/PromoOffersAndForex';
 import TrustStats from './components/TrustStats';
@@ -13,8 +17,7 @@ import Loader from './components/Loader';
 import { PACKAGES } from './data/mockData';
 import { 
   Search, ArrowRight, Globe, ArrowRightLeft, 
-  X, Sparkles, MapPin, Calendar, 
-  PhoneCall, ShieldCheck, Utensils, Award
+  X, MapPin, PhoneCall, Code2
 } from 'lucide-react';
 
 export default function App() {
@@ -28,7 +31,6 @@ export default function App() {
   const [compareList, setCompareList] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
-  // Sync state from URL on initial load and browser Back/Forward navigation
   useEffect(() => {
     const handleUrlSync = () => {
       const params = new URLSearchParams(window.location.search);
@@ -44,7 +46,10 @@ export default function App() {
         }
       }
 
-      if (pageParam && ['track', 'grievance', 'bus', 'home'].includes(pageParam)) {
+      if (
+        pageParam && 
+        ['track', 'grievance', 'bus', 'cookie-policy', 'privacy-policy', 'terms', 'home'].includes(pageParam)
+      ) {
         setActivePage(pageParam);
         setSelectedPkg(null);
       } else {
@@ -58,7 +63,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleUrlSync);
   }, []);
 
-  // Synchronize URL history parameters
   const navigateTo = (page, pkg = null) => {
     setActivePage(page);
     setSelectedPkg(pkg);
@@ -120,36 +124,27 @@ export default function App() {
 
   return (
     <>
-      {/* Runway takeoff flight loader */}
       {loading && <Loader onComplete={() => setLoading(false)} />}
 
       <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#1D4ED8] selection:text-white">
-        {/* Primary Brand Navigation */}
         <Navbar activePage={activePage} setActivePage={(page) => navigateTo(page, null)} />
 
         {activePage === 'home' && (
           <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 flex-1 w-full space-y-12">
-            
-            {/* Spotlight Hero Deck Carousel */}
             <section className="animate-fade-in">
               <DeckCarousel packages={PACKAGES} onSelect={handleSelectPackage} />
             </section>
 
-            {/* Budget & Party Recommender Console */}
             <section className="animate-fade-in-up">
               <SmartRecommender packages={PACKAGES} onSelect={handleSelectPackage} />
             </section>
 
-            {/* Promotional Discounts & Coupons Grid */}
             <section>
               <PromoOffersAndForex />
             </section>
 
-            {/* Commercial Search & Territory Selector Bar */}
             <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-5">
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                
-                {/* Search Destination Input */}
                 <div className="relative w-full md:w-96">
                   <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -161,7 +156,6 @@ export default function App() {
                   />
                 </div>
 
-                {/* Scope Switcher (All / National / International / Devotional) */}
                 <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 w-full md:w-auto overflow-x-auto no-scrollbar">
                   {['All', 'Domestic', 'International', 'Devotional'].map((cat) => (
                     <button
@@ -186,10 +180,8 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-
               </div>
 
-              {/* Region Pill Filters */}
               <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
                 <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mr-2 flex items-center gap-1.5">
                   <Globe size={13} className="text-[#1D4ED8]" /> Territory:
@@ -210,7 +202,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* Holiday Tour Cards Catalog */}
             <section className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-slate-200 pb-3 gap-2">
                 <div>
@@ -238,7 +229,6 @@ export default function App() {
                         onClick={() => handleSelectPackage(pkg)}
                         className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-[#1D4ED8] transition-all duration-200 cursor-pointer flex flex-col justify-between group"
                       >
-                        {/* Image Header with Marketing Badges */}
                         <div className="h-56 overflow-hidden relative bg-slate-900">
                           <img
                             src={pkg.image}
@@ -255,7 +245,6 @@ export default function App() {
                             {pkg.duration}
                           </div>
 
-                          {/* Direct Compare Action */}
                           <button
                             onClick={(e) => toggleCompare(pkg, e)}
                             className={`absolute bottom-3 left-3 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 transition-all rounded-lg cursor-pointer ${
@@ -269,10 +258,8 @@ export default function App() {
                           </button>
                         </div>
 
-                        {/* Content Card Body */}
                         <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                           <div>
-                            {/* Rating & Review Ribbon */}
                             <div className="flex items-center gap-2 text-xs mb-1.5">
                               <span className="bg-amber-100 text-amber-950 font-black px-2 py-0.5 rounded text-[11px]">
                                 ★ {pkg.rating}
@@ -284,7 +271,6 @@ export default function App() {
                               {pkg.title}
                             </h4>
 
-                            {/* Sightseeing Milestones */}
                             <div className="mt-3 space-y-1.5 text-xs text-slate-600">
                               {pkg.highlights.slice(0, 2).map((item, i) => (
                                 <div key={i} className="flex items-start gap-1.5">
@@ -295,7 +281,6 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Commercial Pricing & CTA Bar */}
                           <div className="pt-3.5 border-t border-slate-100 flex items-end justify-between gap-2">
                             <div>
                               <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-bold">
@@ -339,10 +324,8 @@ export default function App() {
               )}
             </section>
 
-            {/* Animated Heritage Performance Metrics */}
             <TrustStats />
 
-            {/* Floating Comparison Tray */}
             {compareList.length > 0 && (
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0B2545] text-white rounded-2xl px-6 py-3.5 shadow-2xl flex items-center gap-5 border border-slate-700 animate-fade-in-up">
                 <div className="text-xs">
@@ -365,14 +348,15 @@ export default function App() {
                 </div>
               </div>
             )}
-
           </main>
         )}
 
-        {/* Client Bus Booking Page */}
+        {/* Page Render Routing */}
         {activePage === 'bus' && <BusBookingPage />}
+        {activePage === 'cookie-policy' && <CookiePolicyPage onBack={handleBackToCatalog} />}
+        {activePage === 'privacy-policy' && <PrivacyPolicyPage onBack={handleBackToCatalog} />}
+        {activePage === 'terms' && <TermsPage onBack={handleBackToCatalog} />}
 
-        {/* Package Detail View Container with Single Share & Related Package Routing */}
         {activePage === 'detail' && selectedPkg && (
           <PackageDetailPage 
             pkg={selectedPkg} 
@@ -384,7 +368,6 @@ export default function App() {
         {activePage === 'track' && <TrackBookingPage />}
         {activePage === 'grievance' && <GrievancePage />}
 
-        {/* Compare Modal */}
         {isCompareOpen && (
           <CompareModal
             packages={compareList}
@@ -396,44 +379,80 @@ export default function App() {
           />
         )}
 
+        {/* Persistent Cookie Consent Popup */}
+        <CookiePopup onNavigate={(page) => navigateTo(page)} />
+
         {/* Commercial Brand Footer */}
         <footer className="border-t border-slate-200 bg-white text-xs text-slate-500 py-12 mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-col text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-1">
-                <span className="font-black tracking-tight text-[#0B2545] text-lg">ABHI</span>
-                <span className="font-black tracking-tight text-[#FF9900] text-lg">WORLD</span>
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
+              <div className="flex flex-col text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-1">
+                  <span className="font-black tracking-tight text-[#0B2545] text-lg font-mono">ABHI</span>
+                  <span className="font-black tracking-tight text-[#FF9900] text-lg font-mono">WORLD</span>
+                </div>
+                <span className="text-[11px] text-slate-400 font-semibold mt-0.5">
+                  Abhi Expeditions Pvt. Ltd. • Ministry of Tourism & IATA Regulated Operator
+                </span>
               </div>
-              <span className="text-[11px] text-slate-400 font-semibold mt-0.5">
-                Abhi Expeditions Pvt. Ltd. • Ministry of Tourism & IATA Regulated Operator
-              </span>
+
+              <div className="flex flex-wrap items-center justify-center gap-6 font-bold text-slate-700">
+                <button 
+                  onClick={() => navigateTo('bus')} 
+                  className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
+                >
+                  Abhi Bus Fleet
+                </button>
+                <button 
+                  onClick={() => navigateTo('track')} 
+                  className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
+                >
+                  PNR Status Terminal
+                </button>
+                <button 
+                  onClick={() => navigateTo('grievance')} 
+                  className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
+                >
+                  Guest Relations Desk
+                </button>
+                <a 
+                  href="tel:1800227979" 
+                  className="hover:text-[#1D4ED8] transition-colors flex items-center gap-1 text-[#0B2545]"
+                >
+                  <PhoneCall size={13} className="text-[#FF9900]" /> 1800-22-7979
+                </a>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 font-bold text-slate-700">
-              <button 
-                onClick={() => navigateTo('bus')} 
-                className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
-              >
-                Abhi Bus Fleet
-              </button>
-              <button 
-                onClick={() => navigateTo('track')} 
-                className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
-              >
-                PNR Status Terminal
-              </button>
-              <button 
-                onClick={() => navigateTo('grievance')} 
-                className="hover:text-[#1D4ED8] transition-colors cursor-pointer"
-              >
-                Guest Relations & CRM Desk
-              </button>
-              <a 
-                href="tel:1800227979" 
-                className="hover:text-[#1D4ED8] transition-colors flex items-center gap-1 text-[#0B2545]"
-              >
-                <PhoneCall size={13} className="text-[#FF9900]" /> 1800-22-7979
-              </a>
+            {/* Bottom Row: Legal Links & SkewX Technologies Attribution */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
+              <div className="flex flex-wrap items-center gap-5">
+                <button
+                  onClick={() => navigateTo('cookie-policy')}
+                  className="hover:text-slate-700 transition cursor-pointer"
+                >
+                  Cookie Policy
+                </button>
+                <button
+                  onClick={() => navigateTo('privacy-policy')}
+                  className="hover:text-slate-700 transition cursor-pointer"
+                >
+                  Privacy Policy
+                </button>
+                <button
+                  onClick={() => navigateTo('terms')}
+                  className="hover:text-slate-700 transition cursor-pointer"
+                >
+                  Terms & Conditions
+                </button>
+              </div>
+
+              {/* Developer Attribution */}
+              <div className="flex items-center gap-1.5 font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                <Code2 size={13} className="text-[#1D4ED8]" />
+                <span>Developed by</span>
+                <span className="font-extrabold text-[#0B2545]">SkewX Technologies</span>
+              </div>
             </div>
           </div>
         </footer>
