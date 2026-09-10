@@ -4,7 +4,7 @@ import {
   Check, User, Phone, ArrowRight, X, Clock, 
   SlidersHorizontal, ShieldCheck, Armchair, Bed, Sparkles,
   Sun, Sunset, Moon, Sunrise, RotateCcw, ArrowUpDown, ArrowUp, ArrowDown,
-  Tag, Percent, Zap, CheckCircle2, Award, Search, Loader2
+  Tag, Percent, Zap, CheckCircle2, Award, Search, Loader2, AlertCircle
 } from 'lucide-react';
 import { BUS_LOCATIONS, ABHI_BUS_FLEET } from '../data/busMockData';
 
@@ -57,7 +57,6 @@ const generateStandardSeaterDeck = (basePrice) => {
   return rows;
 };
 
-// Realistic Mattress SVG for Sleeper Berths
 const SleeperMattressGraphic = ({ isSelected, isSold, isFemale }) => {
   const accentColor = isSold ? '#94A3B8' : isSelected ? '#FFFFFF' : isFemale ? '#E11D48' : '#2563EB';
   const pillowBg = isSold ? '#CBD5E1' : isSelected ? '#047857' : isFemale ? '#FFE4E6' : '#EFF6FF';
@@ -73,7 +72,6 @@ const SleeperMattressGraphic = ({ isSelected, isSold, isFemale }) => {
   );
 };
 
-// Ergonomic Push-Back Seat SVG for Regular Coaches
 const RegularSeatGraphic = ({ isSelected, isSold, isFemale }) => {
   const accentColor = isSold ? '#94A3B8' : isSelected ? '#FFFFFF' : isFemale ? '#E11D48' : '#1D4ED8';
   const cushionBg = isSold ? '#E2E8F0' : isSelected ? '#047857' : isFemale ? '#FFF1F2' : '#F8FAFC';
@@ -89,7 +87,6 @@ const RegularSeatGraphic = ({ isSelected, isSold, isFemale }) => {
   );
 };
 
-// Slot mapper helper
 const checkTimeSlot = (timeString, slot) => {
   if (slot === 'all') return true;
   const hour = parseInt(timeString.split(':')[0], 10);
@@ -101,21 +98,18 @@ const checkTimeSlot = (timeString, slot) => {
 };
 
 export default function BusBookingPage() {
-  // Active Search & Selection States
-  const [fromCity, setFromCity] = useState(BUS_LOCATIONS[0]);
-  const [toCity, setToCity] = useState(BUS_LOCATIONS[3]);
-  const [journeyDate, setJourneyDate] = useState('2026-09-12');
+  const todayString = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-  // Committed Searched Route (Updated only when Search Buses is clicked)
-  const [activeSearchSummary, setActiveSearchSummary] = useState({
-    from: BUS_LOCATIONS[0],
-    to: BUS_LOCATIONS[3],
-    date: '2026-09-12'
-  });
+  // Form input states start unselected
+  const [fromCity, setFromCity] = useState('');
+  const [toCity, setToCity] = useState('');
+  const [journeyDate, setJourneyDate] = useState(todayString);
 
-  // Searching transition states
+  // Active confirmed search parameters
+  const [activeSearchSummary, setActiveSearchSummary] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchConfirmedBanner, setSearchConfirmedBanner] = useState(false);
+  const [searchValidationError, setSearchValidationError] = useState('');
 
   // Filter & Sorting States
   const [activeBusTypeFilter, setActiveBusTypeFilter] = useState('All');
@@ -146,14 +140,27 @@ export default function BusBookingPage() {
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
   const handleSwapCities = () => {
+    if (!fromCity && !toCity) return;
     const temp = fromCity;
     setFromCity(toCity);
     setToCity(temp);
+    setSearchValidationError('');
   };
 
-  // Search Buses Action with Confirmation
   const handleSearchBuses = (e) => {
     if (e) e.preventDefault();
+
+    if (!fromCity || !toCity) {
+      setSearchValidationError('Please select both departure and destination cities.');
+      return;
+    }
+
+    if (fromCity === toCity) {
+      setSearchValidationError('Departure and destination cities cannot be the same.');
+      return;
+    }
+
+    setSearchValidationError('');
     setIsSearching(true);
 
     setTimeout(() => {
@@ -165,7 +172,7 @@ export default function BusBookingPage() {
       setIsSearching(false);
       setSearchConfirmedBanner(true);
       setTimeout(() => setSearchConfirmedBanner(false), 3500);
-    }, 550);
+    }, 500);
   };
 
   const handleResetFilters = () => {
@@ -175,7 +182,6 @@ export default function BusBookingPage() {
     setArrivalSlot('all');
   };
 
-  // Multi-Filter & Sort Engine
   const filteredBuses = useMemo(() => {
     let result = ABHI_BUS_FLEET.filter((bus) => {
       const matchType = activeBusTypeFilter === 'All' || bus.category === activeBusTypeFilter;
@@ -282,7 +288,7 @@ export default function BusBookingPage() {
       total: finalPrice,
       boarding: selectedBoarding,
       dropping: selectedDropping,
-      date: activeSearchSummary.date,
+      date: activeSearchSummary?.date || journeyDate,
       passenger
     });
     setActiveBusModal(null);
@@ -297,7 +303,7 @@ export default function BusBookingPage() {
     <div className="min-h-screen bg-[#F4F6F9] py-8 px-4 sm:px-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
 
-        {/* 1. Search Bar Console with Dedicated Search Button */}
+        {/* 1. Search Bar Console */}
         <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm relative overflow-hidden space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -313,18 +319,26 @@ export default function BusBookingPage() {
           </div>
 
           <form onSubmit={handleSearchBuses} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-            {/* From */}
+            {/* From City */}
             <div className="md:col-span-3 relative group">
               <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Departure City</span>
-              <div className="flex items-center gap-2 border border-slate-300 rounded-2xl px-3 py-2.5 bg-slate-50 group-hover:bg-white group-hover:border-[#1D4ED8] transition-all">
-                <MapPin size={16} className="text-[#1D4ED8] shrink-0" />
+              <div className={`flex items-center gap-2 border rounded-2xl px-3 py-2.5 transition-all ${
+                fromCity ? 'bg-white border-slate-300' : 'bg-slate-50 border-slate-200'
+              } group-hover:border-[#1D4ED8]`}>
+                <MapPin size={16} className={fromCity ? 'text-[#1D4ED8]' : 'text-slate-400'} />
                 <select
                   value={fromCity}
-                  onChange={(e) => setFromCity(e.target.value)}
-                  className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
+                  onChange={(e) => {
+                    setFromCity(e.target.value);
+                    setSearchValidationError('');
+                  }}
+                  className={`w-full bg-transparent text-xs font-bold focus:outline-none cursor-pointer truncate ${
+                    fromCity ? 'text-slate-900' : 'text-slate-400 font-normal'
+                  }`}
                 >
+                  <option value="">Select Departure City</option>
                   {BUS_LOCATIONS.map((loc) => (
-                    <option key={loc} value={loc}>{loc}</option>
+                    <option key={loc} value={loc} className="text-slate-900 font-semibold">{loc}</option>
                   ))}
                 </select>
               </div>
@@ -342,30 +356,39 @@ export default function BusBookingPage() {
               </button>
             </div>
 
-            {/* To */}
+            {/* To City */}
             <div className="md:col-span-3 relative group">
               <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Destination City</span>
-              <div className="flex items-center gap-2 border border-slate-300 rounded-2xl px-3 py-2.5 bg-slate-50 group-hover:bg-white group-hover:border-[#FF9900] transition-all">
-                <MapPin size={16} className="text-[#FF9900] shrink-0" />
+              <div className={`flex items-center gap-2 border rounded-2xl px-3 py-2.5 transition-all ${
+                toCity ? 'bg-white border-slate-300' : 'bg-slate-50 border-slate-200'
+              } group-hover:border-[#FF9900]`}>
+                <MapPin size={16} className={toCity ? 'text-[#FF9900]' : 'text-slate-400'} />
                 <select
                   value={toCity}
-                  onChange={(e) => setToCity(e.target.value)}
-                  className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
+                  onChange={(e) => {
+                    setToCity(e.target.value);
+                    setSearchValidationError('');
+                  }}
+                  className={`w-full bg-transparent text-xs font-bold focus:outline-none cursor-pointer truncate ${
+                    toCity ? 'text-slate-900' : 'text-slate-400 font-normal'
+                  }`}
                 >
+                  <option value="">Select Destination City</option>
                   {BUS_LOCATIONS.map((loc) => (
-                    <option key={loc} value={loc}>{loc}</option>
+                    <option key={loc} value={loc} className="text-slate-900 font-semibold">{loc}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Date */}
+            {/* Travel Date */}
             <div className="md:col-span-2 relative group">
               <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Travel Date</span>
-              <div className="flex items-center gap-2 border border-slate-300 rounded-2xl px-3 py-2.5 bg-slate-50 group-hover:bg-white group-hover:border-emerald-600 transition-all">
+              <div className="flex items-center gap-2 border border-slate-300 rounded-2xl px-3 py-2.5 bg-white group-hover:border-emerald-600 transition-all">
                 <Calendar size={16} className="text-emerald-600 shrink-0" />
                 <input
                   type="date"
+                  min={todayString}
                   value={journeyDate}
                   onChange={(e) => setJourneyDate(e.target.value)}
                   className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
@@ -395,8 +418,16 @@ export default function BusBookingPage() {
             </div>
           </form>
 
+          {/* Validation Alert */}
+          {searchValidationError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs flex items-center gap-2 text-rose-800 animate-fade-in">
+              <AlertCircle size={15} className="text-rose-600 shrink-0" />
+              <span className="font-bold">{searchValidationError}</span>
+            </div>
+          )}
+
           {/* Search Confirmation Ribbon */}
-          {searchConfirmedBanner && (
+          {searchConfirmedBanner && activeSearchSummary && (
             <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs flex items-center justify-between text-emerald-900 animate-fade-in">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
@@ -554,7 +585,9 @@ export default function BusBookingPage() {
           <div className="flex justify-between items-center px-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">
-                {filteredBuses.length} Coaches Available For {activeSearchSummary.from} → {activeSearchSummary.to}
+                {activeSearchSummary 
+                  ? `${filteredBuses.length} Coaches Available For ${activeSearchSummary.from} → ${activeSearchSummary.to}`
+                  : 'Select Route to View Available Coaches'}
               </span>
               {priceSort !== 'none' && (
                 <span className="text-[10px] bg-blue-50 text-[#1D4ED8] border border-blue-200 px-2 py-0.5 rounded-full font-black uppercase">
@@ -565,7 +598,15 @@ export default function BusBookingPage() {
             <span className="text-xs text-slate-400">Guaranteed proprietary coaches</span>
           </div>
 
-          {filteredBuses.length > 0 ? (
+          {!activeSearchSummary ? (
+            <div className="bg-white border border-dashed border-slate-300 rounded-3xl p-12 text-center space-y-3 shadow-xs">
+              <Bus size={40} className="text-[#1D4ED8] mx-auto opacity-70" />
+              <h4 className="text-sm font-black text-slate-800">Choose Your Origin & Destination</h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Pick your departure city, destination, and travel date above, then click <strong>Search Buses</strong> to load real-time fleet schedules and seat availability.
+              </p>
+            </div>
+          ) : filteredBuses.length > 0 ? (
             filteredBuses.map((bus) => (
               <div
                 key={bus.id}
@@ -587,7 +628,6 @@ export default function BusBookingPage() {
                     <span>{bus.busType}</span>
                   </div>
 
-                  {/* Timing & Animated Route */}
                   <div className="flex items-center gap-6 text-xs text-slate-800 pt-1">
                     <div>
                       <span className="text-xl font-black font-mono text-[#0B2545] block">{bus.departureTime}</span>
@@ -607,7 +647,6 @@ export default function BusBookingPage() {
                     </div>
                   </div>
 
-                  {/* Amenities */}
                   <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-slate-500 font-semibold">
                     {bus.amenities.map((am, i) => (
                       <span key={i} className="bg-slate-50 border border-slate-200/80 px-2.5 py-0.5 rounded-lg">
@@ -617,7 +656,6 @@ export default function BusBookingPage() {
                   </div>
                 </div>
 
-                {/* Price & CTA */}
                 <div className="w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-8 text-left md:text-right space-y-2 shrink-0">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Fares From</span>
                   <div className="text-3xl font-black font-mono text-[#0B2545] tracking-tight">
@@ -652,7 +690,7 @@ export default function BusBookingPage() {
           )}
         </div>
 
-        {/* 4. Interactive Seat Layout Modal with Coupon System */}
+        {/* 4. Interactive Seat Layout Modal */}
         {activeBusModal && (
           <div 
             onClick={handleCloseModal}
@@ -662,16 +700,15 @@ export default function BusBookingPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col transform transition-all duration-300 scale-100"
             >
-              {/* Modal Top Bar */}
               <div className="px-6 py-4.5 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-20">
                 <div>
                   <div className="flex items-center gap-2 text-sm font-black text-[#0B2545]">
-                    <span>{activeSearchSummary.from}</span>
+                    <span>{activeSearchSummary?.from || fromCity}</span>
                     <span className="text-slate-400">→</span>
-                    <span>{activeSearchSummary.to}</span>
+                    <span>{activeSearchSummary?.to || toCity}</span>
                   </div>
                   <span className="text-xs text-slate-500 font-medium">
-                    {activeBusModal.name} • {activeSearchSummary.date}
+                    {activeBusModal.name} • {activeSearchSummary?.date || journeyDate}
                   </span>
                 </div>
                 <button
@@ -727,10 +764,9 @@ export default function BusBookingPage() {
                 </button>
               </div>
 
-              {/* STEP 1: Full Standard Coach Layout */}
+              {/* STEP 1: Layout */}
               {activeStep === 'seats' && (
                 <div className="p-6 sm:p-8 space-y-6 bg-[#F8FAFC]">
-                  {/* Legend */}
                   <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-wrap items-center justify-center gap-6 text-xs font-bold text-slate-600 shadow-2xs">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-md border-2 border-slate-300 bg-white" />
@@ -750,7 +786,6 @@ export default function BusBookingPage() {
                     </div>
                   </div>
 
-                  {/* Seat Grid */}
                   {isSeaterBus ? (
                     <div className="max-w-md mx-auto bg-white border-2 border-slate-300 rounded-3xl p-6 shadow-sm space-y-4">
                       <div className="flex justify-between items-center pb-3 border-b border-slate-200">
@@ -814,7 +849,6 @@ export default function BusBookingPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                      {/* LOWER DECK */}
                       <div className="bg-white border-2 border-slate-300 rounded-3xl p-5 shadow-sm space-y-4">
                         <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                           <div>
@@ -881,7 +915,6 @@ export default function BusBookingPage() {
                         </div>
                       </div>
 
-                      {/* UPPER DECK */}
                       <div className="bg-white border-2 border-slate-300 rounded-3xl p-5 shadow-sm space-y-4">
                         <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                           <div>
@@ -945,10 +978,8 @@ export default function BusBookingPage() {
                           ))}
                         </div>
                       </div>
-
                     </div>
                   )}
-
                 </div>
               )}
 
@@ -1012,8 +1043,6 @@ export default function BusBookingPage() {
               {/* STEP 3: Passenger Form & Coupon System */}
               {activeStep === 'passenger' && (
                 <div className="p-6 sm:p-8 max-w-xl mx-auto space-y-6">
-                  
-                  {/* Promo & Coupon Code Section */}
                   <div className={`bg-slate-50 border border-slate-200 rounded-3xl p-5 sm:p-6 space-y-3.5 transition-all duration-300 ${couponSuccessAnim ? 'ring-2 ring-emerald-500 scale-102' : ''}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -1093,7 +1122,6 @@ export default function BusBookingPage() {
                     )}
                   </div>
 
-                  {/* Passenger Form */}
                   <form onSubmit={handleBookingConfirm} className="space-y-4">
                     <div>
                       <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Lead Passenger Name</label>
@@ -1144,7 +1172,6 @@ export default function BusBookingPage() {
                       />
                     </div>
 
-                    {/* Price Breakdown Summary */}
                     <div className="bg-slate-50 rounded-2xl p-4.5 border border-slate-200 text-xs space-y-2">
                       <div className="flex justify-between text-slate-600">
                         <span>Base Fare ({selectedSeats.length} {selectedSeats.length === 1 ? 'seat' : 'seats'}):</span>
