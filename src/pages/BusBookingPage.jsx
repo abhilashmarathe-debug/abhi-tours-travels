@@ -3,9 +3,17 @@ import {
   Bus, Calendar, MapPin, ArrowRightLeft, Star, 
   Check, User, Phone, ArrowRight, X, Clock, 
   SlidersHorizontal, ShieldCheck, Armchair, Bed, Sparkles,
-  Sun, Sunset, Moon, Sunrise, RotateCcw, ArrowUpDown, ArrowUp, ArrowDown
+  Sun, Sunset, Moon, Sunrise, RotateCcw, ArrowUpDown, ArrowUp, ArrowDown,
+  Tag, Percent
 } from 'lucide-react';
 import { BUS_LOCATIONS, ABHI_BUS_FLEET } from '../data/busMockData';
+
+// Available mock promo codes
+const PROMO_CODES = {
+  ABHIBUS50: { discount: 50, type: 'flat', desc: 'Flat ₹50 OFF on your booking' },
+  FESTIVE15: { discount: 0.15, type: 'percent', desc: '15% OFF up to ₹250', maxDiscount: 250 },
+  FIRSTBUS: { discount: 100, type: 'flat', desc: 'Flat ₹100 OFF on first coach journey' }
+};
 
 // Standard 2+1 Sleeper Layout Generator (5 Rows = 15 berths per deck; Total 30 berths)
 const generateStandardSleeperDeck = (deckPrefix, basePrice) => {
@@ -99,7 +107,7 @@ export default function BusBookingPage() {
 
   // Filter & Sorting States
   const [activeBusTypeFilter, setActiveBusTypeFilter] = useState('All');
-  const [priceSort, setPriceSort] = useState('none'); // 'none' | 'asc' (Low to High) | 'desc' (High to Low)
+  const [priceSort, setPriceSort] = useState('none');
   const [departureSlot, setDepartureSlot] = useState('all');
   const [arrivalSlot, setArrivalSlot] = useState('all');
 
@@ -109,6 +117,11 @@ export default function BusBookingPage() {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [selectedBoarding, setSelectedBoarding] = useState('');
   const [selectedDropping, setSelectedDropping] = useState('');
+
+  // Coupon code states
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
 
   const [passenger, setPassenger] = useState({
     name: '',
@@ -156,12 +169,18 @@ export default function BusBookingPage() {
     setSelectedSeats([]);
     setSelectedBoarding(bus.boardingPoints[0]?.point || '');
     setSelectedDropping(bus.droppingPoints[0]?.point || '');
+    setCouponInput('');
+    setAppliedCoupon(null);
+    setCouponError('');
   };
 
   const handleCloseModal = () => {
     setActiveBusModal(null);
     setSelectedSeats([]);
     setActiveStep('seats');
+    setCouponInput('');
+    setAppliedCoupon(null);
+    setCouponError('');
   };
 
   const toggleSeat = (seat) => {
@@ -178,7 +197,46 @@ export default function BusBookingPage() {
     }
   };
 
-  const totalPrice = selectedSeats.reduce((acc, s) => acc + s.price, 0);
+  const subtotalPrice = selectedSeats.reduce((acc, s) => acc + s.price, 0);
+
+  // Calculate discount amount
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const promo = PROMO_CODES[appliedCoupon];
+    if (!promo) return 0;
+
+    if (promo.type === 'flat') {
+      return Math.min(promo.discount, subtotalPrice);
+    } else if (promo.type === 'percent') {
+      const calculated = Math.round(subtotalPrice * promo.discount);
+      return promo.maxDiscount ? Math.min(calculated, promo.maxDiscount) : calculated;
+    }
+    return 0;
+  }, [appliedCoupon, subtotalPrice]);
+
+  const finalPrice = Math.max(0, subtotalPrice - discountAmount);
+
+  const handleApplyCoupon = (codeToApply = null) => {
+    const code = (codeToApply || couponInput).trim().toUpperCase();
+    if (!code) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+
+    if (PROMO_CODES[code]) {
+      setAppliedCoupon(code);
+      setCouponInput(code);
+      setCouponError('');
+    } else {
+      setCouponError('Invalid coupon code. Try ABHIBUS50 or FESTIVE15.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
+  };
 
   const handleBookingConfirm = (e) => {
     e.preventDefault();
@@ -187,7 +245,10 @@ export default function BusBookingPage() {
       pnr,
       bus: activeBusModal,
       seats: selectedSeats.map((s) => s.id).join(', '),
-      total: totalPrice,
+      subtotal: subtotalPrice,
+      discount: discountAmount,
+      couponCode: appliedCoupon,
+      total: finalPrice,
       boarding: selectedBoarding,
       dropping: selectedDropping,
       date: journeyDate,
@@ -587,7 +648,7 @@ export default function BusBookingPage() {
                       : 'cursor-pointer hover:text-slate-900'
                   }`}
                 >
-                  <span>Passenger Info</span>
+                  <span>Passenger & Payment</span>
                 </button>
               </div>
 
@@ -873,9 +934,92 @@ export default function BusBookingPage() {
                 </div>
               )}
 
-              {/* STEP 3: Passenger Form */}
+              {/* STEP 3: Passenger Form & Coupon System */}
               {activeStep === 'passenger' && (
-                <div className="p-6 sm:p-8 max-w-lg mx-auto">
+                <div className="p-6 sm:p-8 max-w-xl mx-auto space-y-6">
+                  
+                  {/* Promo & Coupon Code Section */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Tag size={16} className="text-[#1D4ED8]" />
+                        <span className="text-xs font-black uppercase tracking-wider text-[#0B2545]">
+                          Apply Coupon Code
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                        Special Fare Deals
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="ENTER CODE (e.g. ABHIBUS50)"
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value.toUpperCase());
+                          setCouponError('');
+                        }}
+                        disabled={!!appliedCoupon}
+                        className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:border-[#1D4ED8] disabled:bg-slate-100"
+                      />
+                      {appliedCoupon ? (
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 rounded-xl text-xs font-bold transition cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleApplyCoupon()}
+                          className="px-5 py-2.5 bg-[#0B2545] hover:bg-[#07192F] text-white rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                        >
+                          Apply
+                        </button>
+                      )}
+                    </div>
+
+                    {couponError && (
+                      <p className="text-[11px] text-rose-600 font-bold">{couponError}</p>
+                    )}
+
+                    {appliedCoupon && (
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-xs">
+                        <div className="flex items-center gap-2">
+                          <Check size={14} className="text-emerald-700 stroke-[3]" />
+                          <span className="font-bold text-emerald-900">
+                            '{appliedCoupon}' Applied ({PROMO_CODES[appliedCoupon].desc})
+                          </span>
+                        </div>
+                        <span className="font-mono font-black text-emerald-700">-₹{discountAmount}</span>
+                      </div>
+                    )}
+
+                    {/* Quick Available Promo Pills */}
+                    {!appliedCoupon && (
+                      <div className="pt-2 border-t border-slate-200/80">
+                        <span className="text-[10px] font-bold text-slate-400 block mb-1.5 uppercase">Available Offers:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Object.keys(PROMO_CODES).map((code) => (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => handleApplyCoupon(code)}
+                              className="px-2.5 py-1 rounded-lg bg-white border border-dashed border-slate-300 hover:border-[#1D4ED8] text-slate-700 hover:text-[#1D4ED8] text-[10px] font-mono font-bold transition cursor-pointer"
+                            >
+                              {code} ({PROMO_CODES[code].desc})
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Passenger Form */}
                   <form onSubmit={handleBookingConfirm} className="space-y-4">
                     <div>
                       <label className="text-[10px] font-black uppercase text-slate-500 block mb-1">Lead Passenger Name</label>
@@ -926,11 +1070,29 @@ export default function BusBookingPage() {
                       />
                     </div>
 
+                    {/* Price Breakdown Summary */}
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs space-y-1.5">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Base Fare ({selectedSeats.length} {selectedSeats.length === 1 ? 'seat' : 'seats'}):</span>
+                        <span className="font-mono font-bold">₹{subtotalPrice.toLocaleString('en-IN')}</span>
+                      </div>
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-emerald-700 font-bold">
+                          <span>Coupon Discount ({appliedCoupon}):</span>
+                          <span className="font-mono">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-[#0B2545] font-black text-sm pt-2 border-t border-slate-200">
+                        <span>Net Payable Amount:</span>
+                        <span className="font-mono">₹{finalPrice.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+
                     <button
                       type="submit"
                       className="w-full py-3.5 bg-[#FF9900] hover:bg-[#E68A00] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer mt-4 active:scale-95"
                     >
-                      Confirm Booking & Pay ₹{totalPrice.toLocaleString('en-IN')}
+                      Confirm Booking & Pay ₹{finalPrice.toLocaleString('en-IN')}
                     </button>
                   </form>
                 </div>
@@ -942,9 +1104,22 @@ export default function BusBookingPage() {
                   <span className="text-xs text-slate-500 font-bold">
                     {selectedSeats.length} {selectedSeats.length === 1 ? 'seat / berth' : 'seats / berths'}
                   </span>
-                  <span className="text-xl font-black text-[#0B2545] font-mono">
-                    ₹{totalPrice.toLocaleString('en-IN')}
-                  </span>
+                  <div>
+                    {appliedCoupon ? (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-black text-[#0B2545] font-mono">
+                          ₹{finalPrice.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-xs text-slate-400 line-through font-mono">
+                          ₹{subtotalPrice.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-black text-[#0B2545] font-mono">
+                        ₹{subtotalPrice.toLocaleString('en-IN')}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {activeStep === 'seats' && (
@@ -968,7 +1143,7 @@ export default function BusBookingPage() {
                     onClick={() => setActiveStep('passenger')}
                     className="px-8 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition shadow-md cursor-pointer active:scale-95"
                   >
-                    Proceed to Passenger Details
+                    Proceed to Passenger & Payment
                   </button>
                 )}
               </div>
@@ -995,7 +1170,14 @@ export default function BusBookingPage() {
                 <p>• <strong>Boarding:</strong> {confirmedBooking.boarding}</p>
                 <p>• <strong>Dropping:</strong> {confirmedBooking.dropping}</p>
                 <p>• <strong>Passenger:</strong> {confirmedBooking.passenger.name} ({confirmedBooking.passenger.phone})</p>
-                <p>• <strong>Total Fare:</strong> ₹{confirmedBooking.total.toLocaleString('en-IN')}</p>
+                {confirmedBooking.couponCode && (
+                  <p className="text-emerald-700 font-semibold">
+                    • <strong>Promo Code:</strong> {confirmedBooking.couponCode} (Saved ₹{confirmedBooking.discount.toLocaleString('en-IN')})
+                  </p>
+                )}
+                <p className="border-t border-slate-200 pt-1.5 text-sm font-black text-slate-900">
+                  • <strong>Total Fare Paid:</strong> ₹{confirmedBooking.total.toLocaleString('en-IN')}
+                </p>
               </div>
 
               <button
@@ -1004,6 +1186,8 @@ export default function BusBookingPage() {
                   setConfirmedBooking(null);
                   setSelectedSeats([]);
                   setActiveStep('seats');
+                  setAppliedCoupon(null);
+                  setCouponInput('');
                 }}
                 className="w-full py-3 bg-[#0B2545] text-white rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer active:scale-95"
               >

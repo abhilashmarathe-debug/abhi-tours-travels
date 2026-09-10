@@ -2,13 +2,25 @@ import React, { useState } from 'react';
 import { 
   Headphones, ShieldAlert, CheckCircle2, Send, PhoneCall, 
   Clock, FileText, AlertCircle, HelpCircle, ArrowRight, MessageSquare,
-  ChevronDown
+  ChevronDown, Bus
 } from 'lucide-react';
 
 const FAQS = [
   {
     q: "How do I make changes or request cancellations for my booking?",
     a: "Modifications and cancellations depend on your package or bus departure category. You can submit an inquiry through this desk with your PNR or contact your designated tour coordinator directly for tier-based cancellation policies and refunds."
+  },
+  {
+    q: "When will I receive my bus booking PNR and driver contact details?",
+    a: "Bus booking confirmation PNRs are generated instantly upon checkout. Boarding bay specifics and driver contact details are delivered via automated SMS and WhatsApp 2 hours prior to scheduled departure."
+  },
+  {
+    q: "What is the luggage allowance on Abhi Bus Sleeper and Seater coaches?",
+    a: "Each passenger is entitled to 1 standard check-in luggage piece (up to 20 kg) placed securely in the lower luggage hold, plus 1 personal laptop bag or handbag inside the berth/seat cabin."
+  },
+  {
+    q: "Can I change my boarding or dropping point after bus ticket confirmation?",
+    a: "Yes. Boarding and dropping stops can be updated up to 4 hours prior to scheduled departure by logging an urgent ticket here with your bus PNR or contacting the Abhi Bus Helpdesk directly."
   },
   {
     q: "What dietary options are guaranteed on escorted holidays?",
@@ -19,12 +31,8 @@ const FAQS = [
     a: "Our pilgrim circuits include verified token coordination for priority sanctum entry (such as Kashi Vishwanath and Tirupati Balaji) managed by experienced local pandits and escorts."
   },
   {
-    q: "When will I receive my bus booking PNR and driver contact details?",
-    a: "Bus booking confirmation PNRs are generated instantly upon checkout. Boarding bay specifics and driver contact details are delivered via automated SMS and WhatsApp 2 hours prior to scheduled departure."
-  },
-  {
-    q: "What documentation is required for domestic flights and hotel check-ins?",
-    a: "Every passenger must present a government-recognized physical photo ID (Aadhaar Card, Passport, or Voter ID) at all airport checkpoints, hotel receptions, and high-altitude border permits."
+    q: "What documentation is required for domestic flights, buses, and hotel check-ins?",
+    a: "Every passenger must present a government-recognized physical photo ID (Aadhaar Card, Passport, or Voter ID) at all airport checkpoints, coach boarding gates, and hotel check-ins."
   }
 ];
 
@@ -74,7 +82,6 @@ export default function GrievancePage() {
             <span className="font-mono font-black text-[#0B2545]">{ticketId}</span>
           </div>
 
-          {/* Ticket Summary Box */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-left text-xs space-y-2.5 max-w-md mx-auto">
             <div className="flex justify-between text-slate-600">
               <span className="font-medium">Guest Legal Name:</span>
@@ -101,7 +108,7 @@ export default function GrievancePage() {
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
-            Our Central Operations Desk and Duty Manager have received your submission. An executive will contact you directly on your registered mobile number within the specified response window.
+            Our Central Operations Desk and Fleet Managers have received your submission. An executive will contact you directly on your registered mobile number within the specified response window.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -147,7 +154,7 @@ export default function GrievancePage() {
           Guest Support & Inquiry Portal
         </h1>
         <p className="text-xs text-slate-500 max-w-xl mx-auto leading-relaxed">
-          Log formal queries regarding visa documentation, dietary requirements, booking modifications, GST tax invoices, or on-tour emergency assistance.
+          Log formal queries regarding holidays, Abhi Bus services, seat changes, boarding points, dietary requests, or payment verification.
         </p>
       </div>
 
@@ -178,8 +185,8 @@ export default function GrievancePage() {
             <ShieldAlert size={18} className="text-[#FF9900]" />
           </div>
           <div>
-            <span className="text-xs font-black text-slate-900 block">On-Trip Escalations</span>
-            <span className="text-[11px] text-slate-500">Direct link to tour leaders on duty</span>
+            <span className="text-xs font-black text-slate-900 block">Transit Escalations</span>
+            <span className="text-[11px] text-slate-500">Direct link to bus & tour managers</span>
           </div>
         </div>
       </div>
@@ -202,7 +209,6 @@ export default function GrievancePage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {/* Row 1: Name & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs uppercase tracking-wider text-slate-700 font-extrabold block">
@@ -233,7 +239,6 @@ export default function GrievancePage() {
             </div>
           </div>
 
-          {/* Row 2: PNR, Department, Priority */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs uppercase tracking-wider text-slate-700 font-extrabold block">
@@ -241,7 +246,7 @@ export default function GrievancePage() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. ABHI-982410"
+                placeholder="e.g. ABHI-BUS-482109 or ABHI-982410"
                 value={formData.pnr}
                 onChange={(e) => setFormData({ ...formData, pnr: e.target.value })}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:bg-white focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-all"
@@ -257,10 +262,12 @@ export default function GrievancePage() {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 font-semibold focus:outline-none focus:bg-white focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-all cursor-pointer"
               >
+                <option value="Abhi Bus Seat & Boarding Point Change">Abhi Bus: Seat / Boarding Inquiry</option>
+                <option value="Abhi Bus Ticket Modification / Refund">Abhi Bus: Modification & Refund</option>
                 <option value="Billing & Proforma Invoices">Billing & Proforma Invoices</option>
                 <option value="Visa & Passport Documentation">Visa & Passport Documentation</option>
                 <option value="Indian Kitchen & Jain Catering">Indian Kitchen & Jain Meals</option>
-                <option value="Tour Leader & Coach Operations">Tour Manager & Coach Transit</option>
+                <option value="Tour Leader & Coach Operations">Tour Manager & Escort Transit</option>
                 <option value="On-Trip Emergency Request">On-Trip Urgent Assistance</option>
               </select>
             </div>
@@ -276,12 +283,11 @@ export default function GrievancePage() {
               >
                 <option value="Normal (48h SLA)">Standard Request (48h SLA)</option>
                 <option value="Urgent (24h SLA)">Urgent Departure (24h SLA)</option>
-                <option value="Immediate On-Trip Emergency">Immediate Active-Tour Emergency</option>
+                <option value="Immediate Active-Transit Emergency">Immediate Active-Transit Emergency</option>
               </select>
             </div>
           </div>
 
-          {/* Row 3: Description */}
           <div className="space-y-1.5">
             <label className="text-xs uppercase tracking-wider text-slate-700 font-extrabold block">
               Inquiry Specifics & Brief *
@@ -289,17 +295,16 @@ export default function GrievancePage() {
             <textarea
               required
               rows={4}
-              placeholder="Please provide full details including destination, departure date, or specific requests so our desk can assist efficiently..."
+              placeholder="Please provide specifics (e.g. coach departure time, pickup stop change, or dietary specifications) so our desk can resolve it promptly..."
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8] transition-all resize-none font-medium leading-relaxed"
             />
           </div>
 
-          {/* Form Actions */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
             <span className="text-[11px] text-slate-400">
-              Official acknowledgement and SMS token will be issued upon dispatch.
+              Official acknowledgement and SMS tracking token will be issued upon dispatch.
             </span>
             <button
               type="submit"
@@ -322,7 +327,7 @@ export default function GrievancePage() {
               Frequently Asked Inquiries
             </h3>
             <span className="text-[11px] text-slate-400">
-              Instant answers regarding operational guidelines and booking protocols
+              Instant answers regarding bus operations, holiday schedules, and ticketing guidelines
             </span>
           </div>
         </div>
