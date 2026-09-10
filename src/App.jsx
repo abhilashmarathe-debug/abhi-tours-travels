@@ -449,7 +449,6 @@ export default function App() {
 
               {/* Developer Attribution */}
               <div className="flex items-center gap-1.5 font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                <Code2 size={13} className="text-[#1D4ED8]" />
                 <span>Developed by</span>
                 <span className="font-extrabold text-[#0B2545]">SkewX Technologies</span>
               </div>
